@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.List;
+
 public class Simulator {
 
 	/* Generate tag's random number
@@ -32,9 +35,20 @@ public class Simulator {
 		return status;
 	}
 
-	public void simulate(String protocol, double numTags, double incr, int maxTags, int eval, int fmSize) {
+	public List<int[]> simulate(String protocol, double numTags, double incr, 
+		int maxTags, int eval, int fmSize, boolean pot2) {
 		System.out.println("===== "+protocol+" =====");
 		System.out.println("TAGS\tAV[e|s|c]\tTIME\tSLOTS\tERROR\n");
+
+		// PLOTING
+		List<int[]> esc = new ArrayList<int[]>();
+		int[] e_ = new int[(int)(maxTags/numTags)];
+		int[] c_ = new int[(int)(maxTags/numTags)];
+		int[] nTags = new int[(int)(maxTags/numTags)];
+		int[] cComm = new int[(int)(maxTags/numTags)];
+		int[] timeM = new int[(int)(maxTags/numTags)];
+		int[] nSlots = new int[(int)(maxTags/numTags)];
+		int index = 0;
 
 		// We need to test for 100, 200, 300, ..., 1000 tags
 		for (double env = 1; env <= maxTags/numTags; env+=incr/numTags) {
@@ -45,14 +59,13 @@ public class Simulator {
 			int totalCollision = 0;
 			long totalTime = 0;
 			int totalError = 0;
+			int countCommands = 0;
 			
 			for (int i = 0; i < eval; i++) {
 				long start = System.currentTimeMillis();
 				
 				double n = numTags*env; //Number of tags
-				
-				
-				int L = fmSize; //scurrent frame size
+				int L = fmSize; //current frame size
 
 				// Tell tags they can choose their own random number
 				int[] status = genRandom(n,L);
@@ -61,13 +74,13 @@ public class Simulator {
 				int collision = status[2];
 
 				/* Controls the frame offset.
-				 * At firs offset is 0, on the
+				 * At first offset is 0, on the
 				 * next frame, then it is a sum
 				 * of the size of each frame before.
 				 */
 				int offset = 0;
 				int c = 0, s = 0, e = 0;
-				boolean flag = false;	// <<error>>
+				// boolean flag = false;	// <<error>>
 				
 				/* Every while iteration is equivalent to
 				 * a frame being generated. Frames will
@@ -75,6 +88,7 @@ public class Simulator {
 				 * of tags in collision equals zero.
 				 */
 				while (collision != 0){
+					countCommands++;
 					/* Success slot means we are not
 					 * gonna handle it anymore then
 					 * please kick them out of n.
@@ -101,10 +115,10 @@ public class Simulator {
 					int f_ = (int) Math.ceil(estimateFunction(protocol,qc,collision, slots));
 					L = f_;
 
-					if(!flag) {
-						totalError += Math.abs(offset - f_);
-						flag = true;
-					}
+					// if(!flag) {
+					// 	totalError += Math.abs(offset - f_);
+					// 	flag = true;
+					// }
 					
 					status = genRandom(n,L);
 					empty = status[0];
@@ -117,10 +131,21 @@ public class Simulator {
 				totalSuccess += s;
 				totalCollision += c;
 			}
+
+			nTags[index] = (int)(numTags*env);
+			e_[index] = totalEmpty/eval;
+			c_[index] = totalCollision/eval;
+			cComm[index] = countCommands/eval;
+			timeM[index] = (int)totalTime;
+			nSlots[index] = totalOffset/eval;
+			index++;
+
 			System.out.println((int)(numTags*env)+
 					"\t["+totalEmpty/eval+"|"+totalSuccess/eval+"|"+totalCollision/eval+"]\t"
 					+totalTime+"\t"+totalOffset/eval+"\t"+totalError/eval);
 		}
+		esc.add(e_); esc.add(c_); esc.add(nTags); esc.add(cComm); esc.add(timeM); esc.add(nSlots);
+		return esc;
 	}
 
 	public double log2(double x) {
@@ -137,11 +162,11 @@ public class Simulator {
 
 	public double estimateFunction(String function, int qc, int C, int[] frame) {
 		switch (function) {
-		case "lower-bound":
+		case "Lower-Bound":
 			return C*2;
-		case "schoute":
+		case "Schoute":
 			return C*2.39;
-		case "ilcm-sbs":
+		case "ILCM-sbs":
 			int i = 0;
 			double qn = -1;
 			double Rant = 0;
@@ -194,7 +219,20 @@ public class Simulator {
 	}
 
 	public static void main(String[] args) {
+		List<int[]> esc = new ArrayList<int[]>();
+		String[] estimators = {"Schoute","Lower-Bound","ILCM-sbs"};
+		
 		Simulator simulator = new Simulator();
-		simulator.simulate("ilcm-sbs", 1, 50, 251, 10000, 128);
+		Grafico grafico = new Grafico();
+		
+		for (int i = 0; i < 3; i++) {
+			if(i == 2) esc = simulator.simulate(estimators[i], 1, 50, 250, 10000, 128, false);
+			else esc = simulator.simulate(estimators[i], 100, 100, 1000, 1000, 64, false);
+			grafico.gerar(estimators[i]+"_e", "Tags", "Empty", esc.get(0), esc.get(2));
+			grafico.gerar(estimators[i]+"_c", "Tags", "Collision", esc.get(1), esc.get(2));
+			grafico.gerar(estimators[i]+"_comm", "Tags", "Commands", esc.get(3), esc.get(2));
+			grafico.gerar(estimators[i]+"_time", "Tags", "Time", esc.get(4), esc.get(2));
+			grafico.gerar(estimators[i]+"_slots", "Tags", "Slots", esc.get(5), esc.get(2));
+		}
 	}
 }
