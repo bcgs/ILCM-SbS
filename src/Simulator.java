@@ -147,43 +147,40 @@ public class Simulator {
 			double Rant = 0;
 			double N = 0;
 			double R = 0;
-			int c, s;
-			double l, k;
+			int c, s, status;
+			double l, k, L1, L2, ps1, ps2;
 			double pot = Math.pow(2, qc);
-			//System.out.println("Limit is= "+ (int) Math.pow(2, qc));
-			while(qn == -1 && i < (int)pot) {	
+		while(qn == -1 && i < (int)pot) {	
 				i++;		
 				c = 0;
 				s = 0;
 				//System.out.println("Fetching slot number "+ (i-1));
-				if (frame[i-1] > 1){
+				status = frame[i-1];
+				if (status > 1){
 					c = 1;
-				} else if (frame[i-1] == 1) {
+				} else if (status == 1) {
 					s = 1;
 				}
 				k = c/((4.344 * i - 16.28) + (i/(-2.282 - 0.273 * i)) * c + 0.2407 * Math.log(i + 42.56));
 				l = (1.2592 + 1.513 * i) * Math.tan((Math.pow(1.234 *i, -0.9907)) * c);
-
 				if (k < 0) k = 0;
-
 				N = (k*s) + l;
 				R = (N*pot)/i;
 				
 				/*if (c==0){
-					R = (s*pot)/i;
-				}*/
+					R = (pot)/i;
+				}*/	
 				
 				if (i > 1) {
-					double L1 = pot;
-					double L2 = Math.pow(2, Math.round(log2(R)));
-					double ps1 = (R/L1) * Math.pow((1 - (1/L1)), R-1);
-					double ps2 = (R/L2) * Math.pow((1 - (1/L2)), R-1);
+					L1 = pot;
+					L2 = Math.pow(2, Math.round(log2(R)));
+					ps1 = (R/L1) * Math.pow((1 - (1/L1)), R-1);
+					ps2 = (R/L2) * Math.pow((1 - (1/L2)), R-1);
 
 					if((R - Rant) <= 1 && ((L1 * ps1-s) < (L2 * ps2))){
 						qn = (int) Math.ceil(log2(R));
 					}
 				}
-				
 			}
 			Rant = R;
 			if (qn != -1) return Math.pow(2, qn);
