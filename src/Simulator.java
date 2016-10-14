@@ -60,7 +60,9 @@ public class Simulator {
 			long totalTime = 0;
 			int totalError = 0;
 			int countCommands = 0;
-			
+			boolean flag = false;	// <<error>>
+			int prevOffset=0;
+
 			for (int i = 0; i < eval; i++) {
 				long start = System.currentTimeMillis();
 				
@@ -80,7 +82,6 @@ public class Simulator {
 				 */
 				int offset = 0;
 				int c = 0, s = 0, e = 0;
-				// boolean flag = false;	// <<error>>
 				
 				/* Every while iteration is equivalent to
 				 * a frame being generated. Frames will
@@ -114,11 +115,6 @@ public class Simulator {
 					 */
 					int f_ = (int) Math.ceil(estimateFunction(protocol,qc,collision, slots));
 					L = f_;
-
-					// if(!flag) {
-					// 	totalError += Math.abs(offset - f_);
-					// 	flag = true;
-					// }
 					
 					status = genRandom(n,L);
 					empty = status[0];
@@ -130,6 +126,7 @@ public class Simulator {
 				totalEmpty += e;
 				totalSuccess += s;
 				totalCollision += c;
+				totalError = (int) Math.abs(n-offset);
 			}
 
 			nTags[index] = (int)(numTags*env);
@@ -219,20 +216,88 @@ public class Simulator {
 	}
 
 	public static void main(String[] args) {
-		List<int[]> esc = new ArrayList<int[]>();
-		String[] estimators = {"Schoute","Lower-Bound","ILCM-sbs"};
 		
 		Simulator simulator = new Simulator();
 		Grafico grafico = new Grafico();
 		
-		for (int i = 0; i < 3; i++) {
-			if(i == 2) esc = simulator.simulate(estimators[i], 1, 50, 250, 10000, 128, false);
-			else esc = simulator.simulate(estimators[i], 100, 100, 1000, 1000, 64, false);
-			grafico.gerar(estimators[i]+"_e", "Tags", "Empty", esc.get(0), esc.get(2));
-			grafico.gerar(estimators[i]+"_c", "Tags", "Collision", esc.get(1), esc.get(2));
-			grafico.gerar(estimators[i]+"_comm", "Tags", "Commands", esc.get(3), esc.get(2));
-			grafico.gerar(estimators[i]+"_time", "Tags", "Time", esc.get(4), esc.get(2));
-			grafico.gerar(estimators[i]+"_slots", "Tags", "Slots", esc.get(5), esc.get(2));
-		}
+		List<int[]> lowerbound = new ArrayList<int[]>();
+		List<int[]> schoute = new ArrayList<int[]>();
+		List<int[]> ilcmsbs = new ArrayList<int[]>();
+		
+		//ilcmsbs = simulator.simulate("ILCM-sbs", 1, 50, 250, 10000, 128, false);
+		schoute = simulator.simulate("Schoute", 100, 100, 1000, 1000, 64, false);
+		lowerbound = simulator.simulate("Lower-Bound", 100, 100, 1000, 1000, 64, false);
+		
+
+
+		int emptylb[]= lowerbound.get(0);
+		int emptysc[]= schoute.get(0);
+		//int emptyil[]= ilcmsbs.get(0);
+		
+		int collisionlb[]= lowerbound.get(1);
+		int collisionsc[]= schoute.get(1);
+		//int collisionil[]= ilcmsbs.get(1);
+		
+		int commandlb[]= lowerbound.get(3);
+		int commandsc[]= schoute.get(3);
+		//int commandil[]= ilcmsbs.get(3);
+		
+		int timelb[]= lowerbound.get(4);
+		int timesc[]= schoute.get(4);
+		//int timeil[]= ilcmsbs.get(4);
+
+		int slotlb[]= lowerbound.get(5);
+		int slotsc[]= schoute.get(5);
+		//int slotil[]= ilcmsbs.get(5);
+
+		/*grafico.gerarEstimadores("Slots", "Tags", "Slots",
+				slotlb, slotsc, slotil, 
+				"LoweBound", "Schoute", "ILCM-SbS");
+		
+		grafico.gerarEstimadores("SlotsVazios", "Tags", "Empty", 
+				emptylb, emptysc,emptyil, 
+				"LoweBound", "Schoute", "ILCM-SbS");
+		
+		grafico.gerarEstimadores("Colisoes", "Tags", "Collision",
+				collisionlb, collisionsc,collisionil, 
+				"LoweBound", "Schoute", "ILCM-SbS");
+		
+		grafico.gerarEstimadores("Comandos", "Tags", "Commands", 
+				commandlb, commandsc,commandil, 
+				"LoweBound", "Schoute", "ILCM-SbS");
+		
+		grafico.gerarEstimadores("Tempo", "Tags", "Time",
+				timelb, timesc,timeil, 
+				"LoweBound", "Schoute", "ILCM-SbS");
+		
+		grafico.gerarDupla("DSlots", "Tags", "Slots",
+				slotlb, slotsc,
+				"LoweBound", "Schoute");
+		
+		grafico.gerarDupla("DSlotsVazios", "Tags", "Empty", 
+				emptylb, emptysc, 
+				"LoweBound", "Schoute");
+		
+		grafico.gerarDupla("DColisoes", "Tags", "Collision",
+				collisionlb, collisionsc, 
+				"LoweBound", "Schoute");
+		
+		grafico.gerarDupla("DComandos", "Tags", "Commands", 
+				commandlb, commandsc, 
+				"LoweBound", "Schoute");
+		
+		grafico.gerarDupla("DTempo", "Tags", "Time",
+				timelb, timesc,
+				"LoweBound", "Schoute");*/
+		
+		List<int[]> esc = new ArrayList<int[]>();
+		esc = simulator.simulate("ILCM-sbs", 1, 50, 251, 10000, 128, false);
+		
+		grafico.gerar("ILCM_e", "Tags", "Empty", esc.get(0), esc.get(2));
+		grafico.gerar("ILCM_c", "Tags", "Collision", esc.get(1), esc.get(2));
+		grafico.gerar("ILCM_comm", "Tags", "Commands", esc.get(3), esc.get(2));
+		grafico.gerar("ILCM_time", "Tags", "Time", esc.get(4), esc.get(2));
+		grafico.gerar("ILCM_slots", "Tags", "Slots", esc.get(5), esc.get(2));
+		
 	}
 }
