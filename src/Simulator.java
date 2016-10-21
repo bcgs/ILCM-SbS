@@ -260,11 +260,11 @@ public class Simulator {
 		frameLimited = scanner.nextBoolean();
 
 		System.out.println("Escolha a simulacao"
-				+ "\n 1) Lower Bound & Schoute"
-				+ "\n 2) ICML-SbS"
-				+ "\n 3) Todos os estimadores"
-				+ "\n OBS: A simulacao 3 e bastante demorada por que"
-				+ " \nusa os mesmo parametros para todos os estimadores.");
+			+ "\n 1) Lower Bound & Schoute"
+			+ "\n 2) ICML-SbS"
+			+ "\n 3) Todos os estimadores"
+			+ "\n OBS: A simulacao 3 e bastante demorada por que"
+			+ " \nusa os mesmo parametros para todos os estimadores.");
 
 		int choice = scanner.nextInt();
 		
@@ -273,89 +273,89 @@ public class Simulator {
 		List<int[]> ilcmsbs = new ArrayList<int[]>();
 		
 		switch (choice) {
-			case (1):
-			schoute = simulator.simulate("Schoute", numTags, pace, limit, evalLimit, frameInit, frameLimited);
-			lowerbound = simulator.simulate("Lower-Bound", numTags, pace, limit, evalLimit, frameInit, frameLimited);	
-			int emptylb[]= lowerbound.get(0);
-			int emptysc[]= schoute.get(0);
-			int collisionlb[]= lowerbound.get(1);
-			int collisionsc[]= schoute.get(1);
-			int commandlb[]= lowerbound.get(3);
-			int commandsc[]= schoute.get(3);
-			int timelb[]= lowerbound.get(4);
-			int timesc[]= schoute.get(4);
-			int slotlb[]= lowerbound.get(5);
-			int slotsc[]= schoute.get(5);
-			grafico.gerarDupla("DSlots", "Tags", "Slots",
-						slotlb, slotsc,
-						"LoweBound", "Schoute");	
-				grafico.gerarDupla("DSlotsVazios", "Tags", "Empty", 
-						emptylb, emptysc, 
-						"LoweBound", "Schoute");
-				grafico.gerarDupla("DColisoes", "Tags", "Collision",
-						collisionlb, collisionsc, 
-						"LoweBound", "Schoute");
-				grafico.gerarDupla("DComandos", "Tags", "Commands", 
-						commandlb, commandsc, 
-						"LoweBound", "Schoute");
-				grafico.gerarDupla("DTempo", "Tags", "Time",
-						timelb, timesc,
-						"LoweBound", "Schoute");
-				break;
+		case (1):
+		schoute = simulator.simulate("Schoute", numTags, pace, limit, evalLimit, frameInit, frameLimited);
+		lowerbound = simulator.simulate("Lower-Bound", numTags, pace, limit, evalLimit, frameInit, frameLimited);	
+		int emptylb[]= lowerbound.get(0);
+		int emptysc[]= schoute.get(0);
+		int collisionlb[]= lowerbound.get(1);
+		int collisionsc[]= schoute.get(1);
+		int commandlb[]= lowerbound.get(3);
+		int commandsc[]= schoute.get(3);
+		int timelb[]= lowerbound.get(4);
+		int timesc[]= schoute.get(4);
+		int slotlb[]= lowerbound.get(5);
+		int slotsc[]= schoute.get(5);
+		grafico.gerarDupla("DSlots", "Tags", "Slots",
+				slotlb, slotsc,
+				"LoweBound", "Schoute");	
+		grafico.gerarDupla("DSlotsVazios", "Tags", "Empty", 
+				emptylb, emptysc, 
+				"LoweBound", "Schoute");
+		grafico.gerarDupla("DColisoes", "Tags", "Collision",
+				collisionlb, collisionsc, 
+				"LoweBound", "Schoute");
+		grafico.gerarDupla("DComandos", "Tags", "Commands", 
+				commandlb, commandsc, 
+				"LoweBound", "Schoute");
+		grafico.gerarDupla("DTempo", "Tags", "Time",
+				timelb, timesc,
+				"LoweBound", "Schoute");
+		break;
 
-			case (2):
-				ilcmsbs = simulator.simulate("ILCM-sbs", numTags, pace, limit, evalLimit, frameInit, frameLimited);				
-				grafico.gerar("ILCM_e", "Tags", "Empty", ilcmsbs.get(0), ilcmsbs.get(2));
-				grafico.gerar("ILCM_c", "Tags", "Collision", ilcmsbs.get(1), ilcmsbs.get(2));
-				grafico.gerar("ILCM_comm", "Tags", "Commands", ilcmsbs.get(3), ilcmsbs.get(2));
-				grafico.gerar("ILCM_time", "Tags", "Time", ilcmsbs.get(4), ilcmsbs.get(2));
-				grafico.gerar("ILCM_slots", "Tags", "Slots", ilcmsbs.get(5), ilcmsbs.get(2));
-				break;
+		case (2):
+		ilcmsbs = simulator.simulate("ILCM-sbs", numTags, pace, limit, evalLimit, frameInit, frameLimited);				
+		grafico.gerar("ILCM_e", "Tags", "Empty", ilcmsbs.get(0), ilcmsbs.get(2));
+		grafico.gerar("ILCM_c", "Tags", "Collision", ilcmsbs.get(1), ilcmsbs.get(2));
+		grafico.gerar("ILCM_comm", "Tags", "Commands", ilcmsbs.get(3), ilcmsbs.get(2));
+		grafico.gerar("ILCM_time", "Tags", "Time", ilcmsbs.get(4), ilcmsbs.get(2));
+		grafico.gerar("ILCM_slots", "Tags", "Slots", ilcmsbs.get(5), ilcmsbs.get(2));
+		break;
 
-			case (3):
-				ilcmsbs = simulator.simulate("ILCM-sbs", numTags, pace, limit, evalLimit, frameInit, frameLimited);
-				schoute = simulator.simulate("Schoute", numTags, pace, limit, evalLimit, frameInit, frameLimited);
-				lowerbound = simulator.simulate("Lower-Bound", numTags, pace, limit, evalLimit, frameInit, frameLimited);
-				
-				int emptylb2[]= lowerbound.get(0);
-				int emptysc2[]= schoute.get(0);
-				int emptyil2[]= ilcmsbs.get(0);
-				int collisionlb2[]= lowerbound.get(1);
-				int collisionsc2[]= schoute.get(1);
-				int collisionil2[]= ilcmsbs.get(1);
-				int commandlb2[]= lowerbound.get(3);
-				int commandsc2[]= schoute.get(3);
-				int commandil2[]= ilcmsbs.get(3);
-				int timelb2[]= lowerbound.get(4);
-				int timesc2[]= schoute.get(4);
-				int timeil2[]= ilcmsbs.get(4);	
-				int slotlb2[]= lowerbound.get(5);
-				int slotsc2[]= schoute.get(5);
-				int slotil2[]= ilcmsbs.get(5);
+		case (3):
+		ilcmsbs = simulator.simulate("ILCM-sbs", numTags, pace, limit, evalLimit, frameInit, frameLimited);
+		schoute = simulator.simulate("Schoute", numTags, pace, limit, evalLimit, frameInit, frameLimited);
+		lowerbound = simulator.simulate("Lower-Bound", numTags, pace, limit, evalLimit, frameInit, frameLimited);
+		
+		int emptylb2[]= lowerbound.get(0);
+		int emptysc2[]= schoute.get(0);
+		int emptyil2[]= ilcmsbs.get(0);
+		int collisionlb2[]= lowerbound.get(1);
+		int collisionsc2[]= schoute.get(1);
+		int collisionil2[]= ilcmsbs.get(1);
+		int commandlb2[]= lowerbound.get(3);
+		int commandsc2[]= schoute.get(3);
+		int commandil2[]= ilcmsbs.get(3);
+		int timelb2[]= lowerbound.get(4);
+		int timesc2[]= schoute.get(4);
+		int timeil2[]= ilcmsbs.get(4);	
+		int slotlb2[]= lowerbound.get(5);
+		int slotsc2[]= schoute.get(5);
+		int slotil2[]= ilcmsbs.get(5);
 
-			grafico.gerarEstimadores("Slots", "Tags", "Slots",
-					slotlb2, slotsc2, slotil2, 
-					"LoweBound", "Schoute", "ILCM-SbS");
-			
-			grafico.gerarEstimadores("SlotsVazios", "Tags", "Empty", 
-					emptylb2, emptysc2,emptyil2, 
-					"LoweBound", "Schoute", "ILCM-SbS");
-			
-			grafico.gerarEstimadores("Colisoes", "Tags", "Collision",
-					collisionlb2, collisionsc2,collisionil2, 
-					"LoweBound", "Schoute", "ILCM-SbS");
-			
-			grafico.gerarEstimadores("Comandos", "Tags", "Commands", 
-					commandlb2, commandsc2,commandil2, 
-					"LoweBound", "Schoute", "ILCM-SbS");
-			
-			grafico.gerarEstimadores("Tempo", "Tags", "Time",
-					timelb2, timesc2,timeil2, 
-					"LoweBound", "Schoute", "ILCM-SbS");		
-				break;
+		grafico.gerarEstimadores("Slots", "Tags", "Slots",
+				slotlb2, slotsc2, slotil2, 
+				"LoweBound", "Schoute", "ILCM-SbS");
+		
+		grafico.gerarEstimadores("SlotsVazios", "Tags", "Empty", 
+				emptylb2, emptysc2,emptyil2, 
+				"LoweBound", "Schoute", "ILCM-SbS");
+		
+		grafico.gerarEstimadores("Colisoes", "Tags", "Collision",
+				collisionlb2, collisionsc2,collisionil2, 
+				"LoweBound", "Schoute", "ILCM-SbS");
+		
+		grafico.gerarEstimadores("Comandos", "Tags", "Commands", 
+				commandlb2, commandsc2,commandil2, 
+				"LoweBound", "Schoute", "ILCM-SbS");
+		
+		grafico.gerarEstimadores("Tempo", "Tags", "Time",
+				timelb2, timesc2,timeil2, 
+				"LoweBound", "Schoute", "ILCM-SbS");		
+		break;
 
-			default:
-				break;
+		default:
+			break;
 		};
 	}
 }
