@@ -70,9 +70,9 @@ public class Grafico {
 		XYSeries serie2 = new XYSeries(est2);
 		XYSeries serie3 = new XYSeries(est3);
         for (int i = 0; i < result1.length; i++) {
-               serie1.add((i+1)*100, result1[i] );
-               serie2.add((i+1)*100, result2[i] );
-               serie3.add((i+1)*100, result3[i] );
+               serie1.add((i)*100, result1[i] );
+               serie2.add((i)*100, result2[i] );
+               serie3.add((i)*100, result3[i] );
 
 		}
         
