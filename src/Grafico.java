@@ -62,15 +62,15 @@ public class Grafico {
 	}
 	
 	public void gerarEstimadores(String nomeG, String x, String y, 
-		int[] result1, int[] result2, int[] result3, 
+		int[] result1, int[] result2, int[] result3, int[] numTags,
 		String est1, String est2, String est3) {
 		XYSeries serie1 = new XYSeries(est1);
 		XYSeries serie2 = new XYSeries(est2);
 		XYSeries serie3 = new XYSeries(est3);
         for (int i = 0; i < result1.length; i++) {
-           serie1.add((i)*100, result1[i]);
-           serie2.add((i)*100, result2[i]);
-           serie3.add((i)*100, result3[i]);
+           serie1.add(numTags[i], result1[i]);
+           serie2.add(numTags[i], result2[i]);
+           serie3.add(numTags[i], result3[i]);
 
 		}
         
@@ -110,13 +110,13 @@ public class Grafico {
 		}
 	}
 	public void gerarDupla(String nomeG, String x, String y, 
-		int[] result1, int[] result2, 
+		int[] result1, int[] result2, int[] numTags, 
 		String est1, String est2) {
 		XYSeries serie1 = new XYSeries(est1);
 		XYSeries serie2 = new XYSeries(est2);
         for (int i = 0; i < result1.length; i++) {
-			serie1.add((i+1)*100, result1[i]);
-			serie2.add((i+1)*100, result2[i]);
+			serie1.add(numTags[i], result1[i]);
+			serie2.add(numTags[i], result2[i]);
 		}
         
         XYSeriesCollection dataset = new XYSeriesCollection();

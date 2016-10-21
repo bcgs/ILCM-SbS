@@ -49,12 +49,12 @@ public class Simulator {
 
 		// PLOTING
 		List<int[]> esc = new ArrayList<int[]>();
-		int[] e_ = new int[(int)(maxTags/numTags)];
-		int[] c_ = new int[(int)(maxTags/numTags)];
-		int[] nTags = new int[(int)(maxTags/numTags)];
-		int[] cComm = new int[(int)(maxTags/numTags)];
-		int[] timeM = new int[(int)(maxTags/numTags)];
-		int[] nSlots = new int[(int)(maxTags/numTags)];
+		int[] e_ = new int[(int)(maxTags/incr)];
+		int[] c_ = new int[(int)(maxTags/incr)];
+		int[] nTags = new int[(int)(maxTags/incr)];
+		int[] cComm = new int[(int)(maxTags/incr)];
+		int[] timeM = new int[(int)(maxTags/incr)];
+		int[] nSlots = new int[(int)(maxTags/incr)];
 		int index = 0;
 		comm = 0;
 
@@ -287,19 +287,19 @@ public class Simulator {
 		int slotlb[]= lowerbound.get(5);
 		int slotsc[]= schoute.get(5);
 		grafico.gerarDupla("DSlots", "Tags", "Slots",
-				slotlb, slotsc,
+				slotlb, slotsc, schoute.get(2),
 				"LoweBound", "Schoute");	
 		grafico.gerarDupla("DSlotsVazios", "Tags", "Empty", 
-				emptylb, emptysc, 
+				emptylb, emptysc, schoute.get(2), 
 				"LoweBound", "Schoute");
 		grafico.gerarDupla("DColisoes", "Tags", "Collision",
-				collisionlb, collisionsc, 
+				collisionlb, collisionsc, schoute.get(2), 
 				"LoweBound", "Schoute");
 		grafico.gerarDupla("DComandos", "Tags", "Commands", 
-				commandlb, commandsc, 
+				commandlb, commandsc, schoute.get(2), 
 				"LoweBound", "Schoute");
 		grafico.gerarDupla("DTempo", "Tags", "Time",
-				timelb, timesc,
+				timelb, timesc, schoute.get(2),
 				"LoweBound", "Schoute");
 		break;
 
@@ -334,23 +334,23 @@ public class Simulator {
 		int slotil2[]= ilcmsbs.get(5);
 
 		grafico.gerarEstimadores("Slots", "Tags", "Slots",
-				slotlb2, slotsc2, slotil2, 
+				slotlb2, slotsc2, slotil2,ilcmsbs.get(2), 
 				"LoweBound", "Schoute", "ILCM-SbS");
 		
 		grafico.gerarEstimadores("SlotsVazios", "Tags", "Empty", 
-				emptylb2, emptysc2,emptyil2, 
+				emptylb2, emptysc2,emptyil2,ilcmsbs.get(2), 
 				"LoweBound", "Schoute", "ILCM-SbS");
 		
 		grafico.gerarEstimadores("Colisoes", "Tags", "Collision",
-				collisionlb2, collisionsc2,collisionil2, 
+				collisionlb2, collisionsc2,collisionil2,ilcmsbs.get(2), 
 				"LoweBound", "Schoute", "ILCM-SbS");
 		
 		grafico.gerarEstimadores("Comandos", "Tags", "Commands", 
-				commandlb2, commandsc2,commandil2, 
+				commandlb2, commandsc2,commandil2,ilcmsbs.get(2), 
 				"LoweBound", "Schoute", "ILCM-SbS");
 		
 		grafico.gerarEstimadores("Tempo", "Tags", "Time",
-				timelb2, timesc2,timeil2, 
+				timelb2, timesc2,timeil2,ilcmsbs.get(2), 
 				"LoweBound", "Schoute", "ILCM-SbS");		
 		break;
 
