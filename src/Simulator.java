@@ -59,7 +59,7 @@ public class Simulator {
 		comm = 0;
 
 		// We need to test for 100, 200, 300, ..., 1000 tags
-		for (double env = 1; env <= maxTags/numTags; env+=incr/numTags) {
+		for (double env = 1; env <= maxTags/numTags); env+=incr/numTags) {
 			
 			int totalOffset = 0;
 			int totalEmpty = 0;
@@ -251,7 +251,7 @@ public class Simulator {
 		pace = scanner.nextInt();
 		
 		System.out.println("Insira o limite de acressimos:");
-		limit = scanner.nextInt();
+		limit = scanner.nextInt() + 1;
 
 		System.out.println("Insira a quantidade de avaliacoes:");
 		evalLimit = scanner.nextInt();
