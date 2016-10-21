@@ -49,17 +49,17 @@ public class Simulator {
 
 		// PLOTING
 		List<int[]> esc = new ArrayList<int[]>();
-		int[] e_ = new int[(int)(maxTags/incr)];
-		int[] c_ = new int[(int)(maxTags/incr)];
-		int[] nTags = new int[(int)(maxTags/incr)];
-		int[] cComm = new int[(int)(maxTags/incr)];
-		int[] timeM = new int[(int)(maxTags/incr)];
-		int[] nSlots = new int[(int)(maxTags/incr)];
+		int[] e_ = new int[(int)Math.ceil(maxTags/incr)];
+		int[] c_ = new int[(int)Math.ceil(maxTags/incr)];
+		int[] nTags = new int[(int)Math.ceil(maxTags/incr)];
+		int[] cComm = new int[(int)Math.ceil(maxTags/incr)];
+		int[] timeM = new int[(int)Math.ceil(maxTags/incr)];
+		int[] nSlots = new int[(int)Math.ceil(maxTags/incr)];
 		int index = 0;
 		comm = 0;
 
 		// We need to test for 100, 200, 300, ..., 1000 tags
-		for (double env = 1; env <= maxTags/numTags); env+=incr/numTags) {
+		for (double env = 1; env <= maxTags/numTags; env+=incr/numTags) {
 			
 			int totalOffset = 0;
 			int totalEmpty = 0;
@@ -68,7 +68,6 @@ public class Simulator {
 			long totalTime = 0;
 			int totalError = 0;
 			int countCommands = 0;
-			int prevOffset=0;
 
 			for (int i = 0; i < eval; i++) {
 				long start = System.currentTimeMillis();
@@ -105,7 +104,7 @@ public class Simulator {
 					 */
 					n -= success;
 
-					// ACK for each sucess slot
+					// ACK for each success slot
 					countCommands += success;
 
 					/* offset is now holding the total frame size
@@ -125,7 +124,7 @@ public class Simulator {
 					 * of number of tags which should taken as the
 					 * next frame size. Quite obvious, isn't it?
 					 */
-					int f_ = (int) Math.ceil(estimateFunction(protocol,qc,collision, slots));
+					int f_ = (int) Math.ceil(estimateFunction(protocol,qc,collision,success,slots,L));
 
 					if(pot2) L = (int) Math.pow(2,(Math.ceil(log2(f_))));
 					else L = f_;
@@ -176,62 +175,74 @@ public class Simulator {
 		return (N * Math.pow(2, qc))/i;
 	}
 
-	public double estimateFunction(String function, int qc, int C, int[] frame) {
+	public double estimateFunction(String function, int qc, int C, int S, int[] frame, int L) {
 		switch (function) {
-			case "Lower-Bound":
-				return C*2;
-			case "Schoute":
-				return C*2.39;
-			case "ILCM-sbs":
-				int i = 0;
-				double qn = -1;
-				double Rant = 0;
-				double N = 0;
-				double R = 0;
-				int c, s, status;
-				double l, k, L1, L2, ps1, ps2;
-				double pot = Math.pow(2, qc);
-				
-				while(qn == -1 && i < (int)pot) {	
-					i++;		
-					c = 0;
-					s = 0;
-					status = frame[i-1];
-					comm++;
-					if (status > 1){
-						c = 1;
-					} else if (status == 1) {
-						s = 1;
-					}
-					k = c/((4.344 * i - 16.28) + (i/(-2.282 - 0.273 * i)) * c + 0.2407 * Math.log(i + 42.56));
-					l = (1.2592 + 1.513 * i) * Math.tan((Math.pow(1.234 *i, -0.9907)) * c);
-					if (k < 0) k = 0;
-					N = (k*s) + l;
-					R = (N*pot)/i;
-					
-					/*if (c==0){
-						R = (pot)/i;
-					}*/	
-					
-					if (i > 1) {
-						L1 = pot;
-						L2 = Math.pow(2, Math.round(log2(R)));
-						ps1 = (R/L1) * Math.pow((1 - (1/L1)), R-1);
-						ps2 = (R/L2) * Math.pow((1 - (1/L2)), R-1);
+		case "Lower-Bound":
+			return C*2;
 
-						if((R - Rant) <= 1 && ((L1 * ps1-s) < (L2 * ps2))){
-							qn = (int) Math.ceil(log2(R));
-						}
+		case "Schoute":
+			return C*2.39;
+
+		case "ILCM-sbs":
+			int i = 0;
+			double qn = -1;
+			double Rant = 0;
+			double N = 0;
+			double R = 0;
+			int c, s, status;
+			double l, k, L1, L2, ps1, ps2;
+			double pot = Math.pow(2, qc);
+			
+			while(qn == -1 && i < (int)pot) {	
+				i++;		
+				c = 0;
+				s = 0;
+				status = frame[i-1];
+				comm++;
+				if (status > 1){
+					c = 1;
+				} else if (status == 1) {
+					s = 1;
+				}
+				k = c/((4.344 * i - 16.28) + (i/(-2.282 - 0.273 * i)) * c + 0.2407 * Math.log(i + 42.56));
+				l = (1.2592 + 1.513 * i) * Math.tan((Math.pow(1.234 *i, -0.9907)) * c);
+				if (k < 0) k = 0;
+				N = (k*s) + l;
+				R = (N*pot)/i;
+				
+				/*if (c==0){
+					R = (pot)/i;
+				}*/	
+				
+				if (i > 1) {
+					L1 = pot;
+					L2 = Math.pow(2, Math.round(log2(R)));
+					ps1 = (R/L1) * Math.pow((1 - (1/L1)), R-1);
+					ps2 = (R/L2) * Math.pow((1 - (1/L2)), R-1);
+
+					if((R - Rant) <= 1 && ((L1 * ps1-s) < (L2 * ps2))){
+						qn = (int) Math.ceil(log2(R));
 					}
 				}
-				Rant = R;
-				if (qn != -1) return Math.pow(2, qn);
-				else {
-					qn = qc;
-					return Math.pow(2, qn);
-				}
-			default:
-				return 15;
+			}
+			Rant = R;
+			if (qn != -1) return Math.pow(2, qn);
+			else {
+				qn = qc;
+				return Math.pow(2, qn);
+			}
+
+		case "Eom-Lee":
+			double Bk, gamaK = 2, gamaK_prev;			
+			do {
+				gamaK_prev = gamaK;
+				Bk = L/(gamaK_prev * C + S);
+				gamaK = (1 - Math.pow(Math.E,-1/Bk)) / (Bk * (1 - (1 + 1/Bk) * Math.pow(Math.E,-1/Bk)));
+			} while (Math.abs(gamaK_prev - gamaK) >= 0.001);
+			return gamaK * C; 
+
+		default:
+			return 15;
 		}
 	}
 
@@ -260,7 +271,7 @@ public class Simulator {
 		frameLimited = scanner.nextBoolean();
 
 		System.out.println("Escolha a simulacao"
-			+ "\n 1) Lower Bound & Schoute"
+			+ "\n 1) Lower Bound, Schoute & Eom-Lee"
 			+ "\n 2) ICML-SbS"
 			+ "\n 3) Todos os estimadores"
 			+ "\n OBS: A simulacao 3 e bastante demorada por que"
@@ -271,88 +282,63 @@ public class Simulator {
 		List<int[]> lowerbound = new ArrayList<int[]>();
 		List<int[]> schoute = new ArrayList<int[]>();
 		List<int[]> ilcmsbs = new ArrayList<int[]>();
+		List<int[]> eomlee = new ArrayList<int[]>();
 		
 		switch (choice) {
 		case (1):
-		schoute = simulator.simulate("Schoute", numTags, pace, limit, evalLimit, frameInit, frameLimited);
-		lowerbound = simulator.simulate("Lower-Bound", numTags, pace, limit, evalLimit, frameInit, frameLimited);	
-		int emptylb[]= lowerbound.get(0);
-		int emptysc[]= schoute.get(0);
-		int collisionlb[]= lowerbound.get(1);
-		int collisionsc[]= schoute.get(1);
-		int commandlb[]= lowerbound.get(3);
-		int commandsc[]= schoute.get(3);
-		int timelb[]= lowerbound.get(4);
-		int timesc[]= schoute.get(4);
-		int slotlb[]= lowerbound.get(5);
-		int slotsc[]= schoute.get(5);
-		grafico.gerarDupla("DSlots", "Tags", "Slots",
-				slotlb, slotsc, schoute.get(2),
-				"LoweBound", "Schoute");	
-		grafico.gerarDupla("DSlotsVazios", "Tags", "Empty", 
-				emptylb, emptysc, schoute.get(2), 
-				"LoweBound", "Schoute");
-		grafico.gerarDupla("DColisoes", "Tags", "Collision",
-				collisionlb, collisionsc, schoute.get(2), 
-				"LoweBound", "Schoute");
-		grafico.gerarDupla("DComandos", "Tags", "Commands", 
-				commandlb, commandsc, schoute.get(2), 
-				"LoweBound", "Schoute");
-		grafico.gerarDupla("DTempo", "Tags", "Time",
-				timelb, timesc, schoute.get(2),
-				"LoweBound", "Schoute");
-		break;
+			schoute = simulator.simulate("Schoute", numTags, pace, limit, evalLimit, frameInit, frameLimited);
+			lowerbound = simulator.simulate("Lower-Bound", numTags, pace, limit, evalLimit, frameInit, frameLimited);
+			eomlee = simulator.simulate("Eom-Lee", numTags, pace, limit, evalLimit, frameInit, frameLimited);	
+			String[] curves = {"LoweBound", "Schoute", "Eom-Lee"};
+
+			int empty[][]= {lowerbound.get(0),schoute.get(0),eomlee.get(0)};
+			int collision[][]= {lowerbound.get(1),schoute.get(1),eomlee.get(1)};
+			int command[][]= {lowerbound.get(3),schoute.get(3),eomlee.get(3)};
+			int time[][]= {lowerbound.get(4),schoute.get(4),eomlee.get(4)};
+			int slot[][]= {lowerbound.get(5),schoute.get(5),eomlee.get(5)}; 
+
+			grafico.gerarN("DSlots", curves, "Tags", "Slots", slot, schoute.get(2));
+			grafico.gerarN("DSlotsVazios", curves, "Tags", "Empty", empty, schoute.get(2));
+			grafico.gerarN("DColisoes", curves, "Tags", "Collision", collision, schoute.get(2));
+			grafico.gerarN("DComandos", curves, "Tags", "Commands", command, schoute.get(2));
+			grafico.gerarN("DTempo", curves, "Tags", "Time", time, schoute.get(2));
+			break;
 
 		case (2):
-		ilcmsbs = simulator.simulate("ILCM-sbs", numTags, pace, limit, evalLimit, frameInit, frameLimited);				
-		grafico.gerar("ILCM_e", "Tags", "Empty", ilcmsbs.get(0), ilcmsbs.get(2));
-		grafico.gerar("ILCM_c", "Tags", "Collision", ilcmsbs.get(1), ilcmsbs.get(2));
-		grafico.gerar("ILCM_comm", "Tags", "Commands", ilcmsbs.get(3), ilcmsbs.get(2));
-		grafico.gerar("ILCM_time", "Tags", "Time", ilcmsbs.get(4), ilcmsbs.get(2));
-		grafico.gerar("ILCM_slots", "Tags", "Slots", ilcmsbs.get(5), ilcmsbs.get(2));
-		break;
+			ilcmsbs = simulator.simulate("ILCM-sbs", numTags, pace, limit, evalLimit, frameInit, frameLimited);
+			String[] curves2 = {"ILCM-SbS"};
+
+			int empty2[][]= {ilcmsbs.get(0)};
+			int collision2[][]= {ilcmsbs.get(1)};
+			int command2[][]= {ilcmsbs.get(3)};
+			int time2[][]= {ilcmsbs.get(4)};
+			int slot2[][]= {ilcmsbs.get(5)};
+
+			grafico.gerarN("DSlots", curves2, "Tags", "Slots", slot2, ilcmsbs.get(2));
+			grafico.gerarN("DSlotsVazios", curves2, "Tags", "Empty", empty2, ilcmsbs.get(2));
+			grafico.gerarN("DColisoes", curves2, "Tags", "Collision", collision2, ilcmsbs.get(2));
+			grafico.gerarN("DComandos", curves2, "Tags", "Commands", command2, ilcmsbs.get(2));
+			grafico.gerarN("DTempo", curves2, "Tags", "Time", time2, ilcmsbs.get(2));
+			break;
 
 		case (3):
-		ilcmsbs = simulator.simulate("ILCM-sbs", numTags, pace, limit, evalLimit, frameInit, frameLimited);
-		schoute = simulator.simulate("Schoute", numTags, pace, limit, evalLimit, frameInit, frameLimited);
-		lowerbound = simulator.simulate("Lower-Bound", numTags, pace, limit, evalLimit, frameInit, frameLimited);
-		
-		int emptylb2[]= lowerbound.get(0);
-		int emptysc2[]= schoute.get(0);
-		int emptyil2[]= ilcmsbs.get(0);
-		int collisionlb2[]= lowerbound.get(1);
-		int collisionsc2[]= schoute.get(1);
-		int collisionil2[]= ilcmsbs.get(1);
-		int commandlb2[]= lowerbound.get(3);
-		int commandsc2[]= schoute.get(3);
-		int commandil2[]= ilcmsbs.get(3);
-		int timelb2[]= lowerbound.get(4);
-		int timesc2[]= schoute.get(4);
-		int timeil2[]= ilcmsbs.get(4);	
-		int slotlb2[]= lowerbound.get(5);
-		int slotsc2[]= schoute.get(5);
-		int slotil2[]= ilcmsbs.get(5);
+			ilcmsbs = simulator.simulate("ILCM-sbs", numTags, pace, limit, evalLimit, frameInit, frameLimited);
+			schoute = simulator.simulate("Schoute", numTags, pace, limit, evalLimit, frameInit, frameLimited);
+			lowerbound = simulator.simulate("Lower-Bound", numTags, pace, limit, evalLimit, frameInit, frameLimited);
+			String[] curves3 = {"LoweBound", "Schoute", "Eom-Lee", "ILCM-SbS"};
 
-		grafico.gerarEstimadores("Slots", "Tags", "Slots",
-				slotlb2, slotsc2, slotil2,ilcmsbs.get(2), 
-				"LoweBound", "Schoute", "ILCM-SbS");
-		
-		grafico.gerarEstimadores("SlotsVazios", "Tags", "Empty", 
-				emptylb2, emptysc2,emptyil2,ilcmsbs.get(2), 
-				"LoweBound", "Schoute", "ILCM-SbS");
-		
-		grafico.gerarEstimadores("Colisoes", "Tags", "Collision",
-				collisionlb2, collisionsc2,collisionil2,ilcmsbs.get(2), 
-				"LoweBound", "Schoute", "ILCM-SbS");
-		
-		grafico.gerarEstimadores("Comandos", "Tags", "Commands", 
-				commandlb2, commandsc2,commandil2,ilcmsbs.get(2), 
-				"LoweBound", "Schoute", "ILCM-SbS");
-		
-		grafico.gerarEstimadores("Tempo", "Tags", "Time",
-				timelb2, timesc2,timeil2,ilcmsbs.get(2), 
-				"LoweBound", "Schoute", "ILCM-SbS");		
-		break;
+			int empty3[][]= {lowerbound.get(0),schoute.get(0),eomlee.get(0),ilcmsbs.get(0)};
+			int collision3[][]= {lowerbound.get(1),schoute.get(1),eomlee.get(1),ilcmsbs.get(1)};
+			int command3[][]= {lowerbound.get(3),schoute.get(3),eomlee.get(3),ilcmsbs.get(3)};
+			int time3[][]= {lowerbound.get(4),schoute.get(4),eomlee.get(4),ilcmsbs.get(4)};
+			int slot3[][]= {lowerbound.get(5),schoute.get(5),eomlee.get(5),ilcmsbs.get(5)}; 
+
+			grafico.gerarN("DSlots", curves3, "Tags", "Slots", slot3, schoute.get(2));
+			grafico.gerarN("DSlotsVazios", curves3, "Tags", "Empty", empty3, schoute.get(2));
+			grafico.gerarN("DColisoes", curves3, "Tags", "Collision", collision3, schoute.get(2));
+			grafico.gerarN("DComandos", curves3, "Tags", "Commands", command3, schoute.get(2));
+			grafico.gerarN("DTempo", curves3, "Tags", "Time", time3, schoute.get(2));		
+			break;
 
 		default:
 			break;
