@@ -11,26 +11,16 @@ public class Simulator {
 	 * for more information
 	 */
 	
+	static int numTags, frameInit, pace, limit;
+	static boolean icml, lbsc, all;
+
 	int[] slots;
-	
-	static int numTags;
-	
-	static int frameInit;
-	
-	static int pace;
-	
-	static int limit;
-	
-	static boolean icml;
-	
-	static boolean lbsc;
-	
-	static boolean all;
-	
+	int comm;
 	
 	public int[] genRandom(double n, int frameSize){
 		
 		slots = new int[frameSize];
+
 		// status[] represents [e|s|c]
 		// e = number of empty slots
 		// s = number of success slots
@@ -44,9 +34,9 @@ public class Simulator {
 
 		// Now we check each slot for its value.
 		for (int slot : slots) {
-			if(slot==0) status[0]++;	// No tags = EMPTY SLOT
-			if(slot==1) status[1]++;	// Just one tag	= SUCCESS SLOT
-			if(slot>1)  status[2]++;	// More than one tag = COLLISION SLOT
+			if(slot==0) status[0]++;
+			if(slot==1) status[1]++;
+			if(slot>1)  status[2]++;
 		}
 		return status;
 	}
@@ -55,7 +45,7 @@ public class Simulator {
 	public List<int[]> simulate(String protocol, double numTags, double incr, 
 		int maxTags, int eval, int fmSize, boolean pot2) {
 		System.out.println("===== "+protocol+" =====");
-		System.out.println("TAGS\tAV[e|s|c]\tTIME\tSLOTS\n");
+		System.out.println("TAGS\tAV[e|s|c]\tSLOTS\tCMD\tTIME");
 
 		// PLOTING
 		List<int[]> esc = new ArrayList<int[]>();
@@ -66,6 +56,7 @@ public class Simulator {
 		int[] timeM = new int[(int)(maxTags/numTags)];
 		int[] nSlots = new int[(int)(maxTags/numTags)];
 		int index = 0;
+		comm = 0;
 
 		// We need to test for 100, 200, 300, ..., 1000 tags
 		for (double env = 1; env <= maxTags/numTags; env+=incr/numTags) {
@@ -77,14 +68,13 @@ public class Simulator {
 			long totalTime = 0;
 			int totalError = 0;
 			int countCommands = 0;
-			boolean flag = false;	// <<error>>
 			int prevOffset=0;
 
 			for (int i = 0; i < eval; i++) {
 				long start = System.currentTimeMillis();
 				
-				double n = numTags*env; //Number of tags
-				int L = fmSize; //current frame size
+				double n = numTags*env; // Number of tags
+				int L = fmSize; 		// Current frame size
 
 				// Tell tags they can choose their own random number
 				int[] status = genRandom(n,L);
@@ -92,12 +82,14 @@ public class Simulator {
 				int empty = status[1];
 				int collision = status[2];
 
-				/* Controls the frame offset.
+				// Each new frame opened
+				countCommands++;
+
+				/* Control the frame offset.
 				 * At first offset is 0, on the
 				 * next frame, then it is a sum
 				 * of the size of each frame before.
-				 */
-				
+				 */				
 				int offset = 0;
 				int c = 0, s = 0, e = 0;
 				
@@ -106,16 +98,19 @@ public class Simulator {
 				 * keep being generated until the number
 				 * of tags in collision equals zero.
 				 */
-				while (collision != 0){
-					countCommands++;
+				while (collision != 0) {
 					/* Success slot means we are not
 					 * gonna handle it anymore then
 					 * please kick them out of n.
 					 */
 					n -= success;
 
-					// offset is now holding the total frame size
-					// just to be used in the final average calculation.
+					// ACK for each sucess slot
+					countCommands += success;
+
+					/* offset is now holding the total frame size
+					 * just to be used in the final average calculation.
+					 */
 					offset += L;
 					e += empty;
 					s += success;
@@ -123,7 +118,6 @@ public class Simulator {
 
 					// Required by ILCM. 2^qc = L
 					int qc = (int) Math.ceil(log2(L));
-					//System.out.println("QCurrent= "+ qc);
 
 					/* The estimators are going to estimate
 					 * how many tags (n_) would have been involved
@@ -132,12 +126,17 @@ public class Simulator {
 					 * next frame size. Quite obvious, isn't it?
 					 */
 					int f_ = (int) Math.ceil(estimateFunction(protocol,qc,collision, slots));
-					L = f_;
+
+					if(pot2) L = (int) Math.pow(2,(Math.ceil(log2(f_))));
+					else L = f_;
 					
 					status = genRandom(n,L);
 					empty = status[0];
 					success = status[1];
 					collision = status[2];
+
+					// Each call to estimator
+					countCommands++;
 				}
 				totalTime += System.currentTimeMillis() - start;
 				totalOffset += offset;
@@ -155,9 +154,10 @@ public class Simulator {
 			nSlots[index] = totalOffset/eval;
 			index++;
 
-			System.out.println((int)(numTags*env)+
+			System.out.print((int)(numTags*env)+
 					"\t["+totalEmpty/eval+"|"+totalSuccess/eval+"|"+totalCollision/eval+"]\t"
-					+totalTime+"\t"+totalOffset/eval);
+					+totalOffset/eval+"\t"+(countCommands+comm)/eval+"\t");
+			System.out.printf("%.3f\n",totalTime/((double)eval));
 			
 		}
 		esc.add(e_); esc.add(c_); esc.add(nTags); esc.add(cComm); esc.add(timeM); esc.add(nSlots);
@@ -178,59 +178,60 @@ public class Simulator {
 
 	public double estimateFunction(String function, int qc, int C, int[] frame) {
 		switch (function) {
-		case "Lower-Bound":
-			return C*2;
-		case "Schoute":
-			return C*2.39;
-		case "ILCM-sbs":
-			int i = 0;
-			double qn = -1;
-			double Rant = 0;
-			double N = 0;
-			double R = 0;
-			int c, s, status;
-			double l, k, L1, L2, ps1, ps2;
-			double pot = Math.pow(2, qc);
-		while(qn == -1 && i < (int)pot) {	
-				i++;		
-				c = 0;
-				s = 0;
-				//System.out.println("Fetching slot number "+ (i-1));
-				status = frame[i-1];
-				if (status > 1){
-					c = 1;
-				} else if (status == 1) {
-					s = 1;
-				}
-				k = c/((4.344 * i - 16.28) + (i/(-2.282 - 0.273 * i)) * c + 0.2407 * Math.log(i + 42.56));
-				l = (1.2592 + 1.513 * i) * Math.tan((Math.pow(1.234 *i, -0.9907)) * c);
-				if (k < 0) k = 0;
-				N = (k*s) + l;
-				R = (N*pot)/i;
+			case "Lower-Bound":
+				return C*2;
+			case "Schoute":
+				return C*2.39;
+			case "ILCM-sbs":
+				int i = 0;
+				double qn = -1;
+				double Rant = 0;
+				double N = 0;
+				double R = 0;
+				int c, s, status;
+				double l, k, L1, L2, ps1, ps2;
+				double pot = Math.pow(2, qc);
 				
-				/*if (c==0){
-					R = (pot)/i;
-				}*/	
-				
-				if (i > 1) {
-					L1 = pot;
-					L2 = Math.pow(2, Math.round(log2(R)));
-					ps1 = (R/L1) * Math.pow((1 - (1/L1)), R-1);
-					ps2 = (R/L2) * Math.pow((1 - (1/L2)), R-1);
+				while(qn == -1 && i < (int)pot) {	
+					i++;		
+					c = 0;
+					s = 0;
+					status = frame[i-1];
+					comm++;
+					if (status > 1){
+						c = 1;
+					} else if (status == 1) {
+						s = 1;
+					}
+					k = c/((4.344 * i - 16.28) + (i/(-2.282 - 0.273 * i)) * c + 0.2407 * Math.log(i + 42.56));
+					l = (1.2592 + 1.513 * i) * Math.tan((Math.pow(1.234 *i, -0.9907)) * c);
+					if (k < 0) k = 0;
+					N = (k*s) + l;
+					R = (N*pot)/i;
+					
+					/*if (c==0){
+						R = (pot)/i;
+					}*/	
+					
+					if (i > 1) {
+						L1 = pot;
+						L2 = Math.pow(2, Math.round(log2(R)));
+						ps1 = (R/L1) * Math.pow((1 - (1/L1)), R-1);
+						ps2 = (R/L2) * Math.pow((1 - (1/L2)), R-1);
 
-					if((R - Rant) <= 1 && ((L1 * ps1-s) < (L2 * ps2))){
-						qn = (int) Math.ceil(log2(R));
+						if((R - Rant) <= 1 && ((L1 * ps1-s) < (L2 * ps2))){
+							qn = (int) Math.ceil(log2(R));
+						}
 					}
 				}
-			}
-			Rant = R;
-			if (qn != -1) return Math.pow(2, qn);
-			else {
-				qn = qc;
-				return Math.pow(2, qn);
-			}
-		default:
-			return 15;
+				Rant = R;
+				if (qn != -1) return Math.pow(2, qn);
+				else {
+					qn = qc;
+					return Math.pow(2, qn);
+				}
+			default:
+				return 15;
 		}
 	}
 
@@ -240,28 +241,24 @@ public class Simulator {
 		Grafico grafico = new Grafico();
 		Scanner scanner = new Scanner(System.in);
 		
-		System.out.println("Insira o número total de tags da simulação:");
-
+		System.out.println("Insira o numero total de tags da simulacao:");
 		numTags = scanner.nextInt();
 
 		System.out.println("Insira o tamanho do frame inicial:");
-
 		frameInit = scanner.nextInt();
 		
-		System.out.println("Insira a quantidade tags por acréssimo:");
-
+		System.out.println("Insira a quantidade tags por acressimo:");
 		pace = scanner.nextInt();
 		
-		System.out.println("Insira o limite de acréssimos:");
-
+		System.out.println("Insira o limite de acressimos:");
 		limit = scanner.nextInt();
 
-		System.out.println("Escolha a simulação"
+		System.out.println("Escolha a simulacao"
 				+ "\n 1) Lower Bound & Schoute"
 				+ "\n 2) ICML-SbS"
 				+ "\n 3) Todos os estimadores"
-				+ "\n OBS: A simulação 3 é bastante demorada por que"
-				+ " \nusa os mesmo parâmetros para todos os estimadores.");
+				+ "\n OBS: A simulacao 3 e bastante demorada por que"
+				+ " \nusa os mesmo parametros para todos os estimadores.");
 
 		int choice = scanner.nextInt();
 		
@@ -299,18 +296,16 @@ public class Simulator {
 						timelb, timesc,
 						"LoweBound", "Schoute");
 				break;
-			case (2):
-				
-				List<int[]> esc = new ArrayList<int[]>();
-				esc = simulator.simulate("ILCM-sbs", 1, 50, 251, 10000, 128, false);				
-				grafico.gerar("ILCM_e", "Tags", "Empty", esc.get(0), esc.get(2));
-				grafico.gerar("ILCM_c", "Tags", "Collision", esc.get(1), esc.get(2));
-				grafico.gerar("ILCM_comm", "Tags", "Commands", esc.get(3), esc.get(2));
-				grafico.gerar("ILCM_time", "Tags", "Time", esc.get(4), esc.get(2));
-				grafico.gerar("ILCM_slots", "Tags", "Slots", esc.get(5), esc.get(2));
-				
 
+			case (2):
+				ilcmsbs = simulator.simulate("ILCM-sbs", 1, 50, 251, 10000, 128, false);				
+				grafico.gerar("ILCM_e", "Tags", "Empty", ilcmsbs.get(0), ilcmsbs.get(2));
+				grafico.gerar("ILCM_c", "Tags", "Collision", ilcmsbs.get(1), ilcmsbs.get(2));
+				grafico.gerar("ILCM_comm", "Tags", "Commands", ilcmsbs.get(3), ilcmsbs.get(2));
+				grafico.gerar("ILCM_time", "Tags", "Time", ilcmsbs.get(4), ilcmsbs.get(2));
+				grafico.gerar("ILCM_slots", "Tags", "Slots", ilcmsbs.get(5), ilcmsbs.get(2));
 				break;
+
 			case (3):
 				ilcmsbs = simulator.simulate("ILCM-sbs",100, 100, 1000, 10000, 128, false);
 				schoute = simulator.simulate("Schoute", 100, 100, 1000, 1000, 128, false);

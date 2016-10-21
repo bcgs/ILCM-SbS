@@ -1,5 +1,3 @@
-
-
 import java.awt.Color;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -27,22 +25,22 @@ public class Grafico {
 	public void gerar(String nome, String x, String y, int[] result, int[] numTags) {
 		XYSeries serie = new XYSeries("Curva");
         for (int i = 0; i < result.length; i++) {
-               serie.add(numTags[i], result[i]);
+            serie.add(numTags[i], result[i]);
 		}
         
         XYSeriesCollection dataset = new XYSeriesCollection();
         dataset.addSeries(serie);
         
         JFreeChart grafico = ChartFactory.createXYLineChart(
-                nome,      // chart title
-                x,                      // x axis label
-                y,                      // y axis label
-                dataset,                  // data
-                PlotOrientation.VERTICAL,
-                true,                     // include legend
-                true,                     // tooltips
-                false                     // urls
-            );
+            nome,      // chart title
+            x,                      // x axis label
+            y,                      // y axis label
+            dataset,                  // data
+            PlotOrientation.VERTICAL,
+            true,                     // include legend
+            true,                     // tooltips
+            false                     // urls
+        );
         
         XYPlot plot = grafico.getXYPlot();
         XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
@@ -64,15 +62,15 @@ public class Grafico {
 	}
 	
 	public void gerarEstimadores(String nomeG, String x, String y, 
-			int[] result1, int[] result2, int[] result3, 
-			String est1, String est2, String est3) {
+		int[] result1, int[] result2, int[] result3, 
+		String est1, String est2, String est3) {
 		XYSeries serie1 = new XYSeries(est1);
 		XYSeries serie2 = new XYSeries(est2);
 		XYSeries serie3 = new XYSeries(est3);
         for (int i = 0; i < result1.length; i++) {
-               serie1.add((i)*100, result1[i] );
-               serie2.add((i)*100, result2[i] );
-               serie3.add((i)*100, result3[i] );
+           serie1.add((i)*100, result1[i]);
+           serie2.add((i)*100, result2[i]);
+           serie3.add((i)*100, result3[i]);
 
 		}
         
@@ -82,20 +80,20 @@ public class Grafico {
         dataset.addSeries(serie3);
         
         JFreeChart grafico = ChartFactory.createXYLineChart(
-                nomeG,      // chart title
-                x,                      // x axis label
-                y,                      // y axis label
-                dataset,                  // data
-                PlotOrientation.VERTICAL,
-                true,                     // include legend
-                true,                     // tooltips
-                false                     // urls
-            );
+            nomeG,      // chart title
+            x,                      // x axis label
+            y,                      // y axis label
+            dataset,                  // data
+            PlotOrientation.VERTICAL,
+            true,                     // include legend
+            true,                     // tooltips
+            false                     // urls
+        );
         
-       XYPlot plot = grafico.getXYPlot();
-       XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
-       plot.setBackgroundPaint(Color.black);
-       plot.setRenderer(renderer);
+		XYPlot plot = grafico.getXYPlot();
+		XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+		plot.setBackgroundPaint(Color.black);
+		plot.setRenderer(renderer);
 		OutputStream arquivo;
 		try {
 			arquivo = new FileOutputStream(nomeG + ".png");
@@ -112,14 +110,13 @@ public class Grafico {
 		}
 	}
 	public void gerarDupla(String nomeG, String x, String y, 
-			int[] result1, int[] result2, 
-			String est1, String est2) {
+		int[] result1, int[] result2, 
+		String est1, String est2) {
 		XYSeries serie1 = new XYSeries(est1);
 		XYSeries serie2 = new XYSeries(est2);
         for (int i = 0; i < result1.length; i++) {
-               serie1.add((i+1)*100, result1[i] );
-               serie2.add((i+1)*100, result2[i] );
-
+			serie1.add((i+1)*100, result1[i]);
+			serie2.add((i+1)*100, result2[i]);
 		}
         
         XYSeriesCollection dataset = new XYSeriesCollection();
@@ -127,20 +124,20 @@ public class Grafico {
         dataset.addSeries(serie2);
         
         JFreeChart grafico = ChartFactory.createXYLineChart(
-                nomeG,      // chart title
-                x,                      // x axis label
-                y,                      // y axis label
-                dataset,                  // data
-                PlotOrientation.VERTICAL,
-                true,                     // include legend
-                true,                     // tooltips
-                false                     // urls
-            );
+            nomeG,      // chart title
+            x,                      // x axis label
+            y,                      // y axis label
+            dataset,                  // data
+            PlotOrientation.VERTICAL,
+            true,                     // include legend
+            true,                     // tooltips
+            false                     // urls
+        );
         
-       XYPlot plot = grafico.getXYPlot();
-       XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
-       plot.setBackgroundPaint(Color.black);
-       plot.setRenderer(renderer);
+		XYPlot plot = grafico.getXYPlot();
+		XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+		plot.setBackgroundPaint(Color.black);
+		plot.setRenderer(renderer);
 		OutputStream arquivo;
 		try {
 			arquivo = new FileOutputStream(nomeG + ".png");
