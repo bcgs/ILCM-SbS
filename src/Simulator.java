@@ -56,7 +56,6 @@ public class Simulator {
 		int[] timeM = new int[(int)Math.ceil(maxTags/incr)];
 		int[] nSlots = new int[(int)Math.ceil(maxTags/incr)];
 		int index = 0;
-		comm = 0;
 
 		// We need to test for 100, 200, 300, ..., 1000 tags
 		for (double env = 1; env <= maxTags/numTags; env+=incr/numTags) {
@@ -65,12 +64,13 @@ public class Simulator {
 			int totalEmpty = 0;
 			int totalSuccess = 0;
 			int totalCollision = 0;
-			long totalTime = 0;
+			long start = 0, totalTime = 0;
 			int totalError = 0;
 			int countCommands = 0;
+			comm = 0;
 
 			for (int i = 0; i < eval; i++) {
-				long start = System.currentTimeMillis();
+				start = System.currentTimeMillis();
 				
 				double n = numTags*env; // Number of tags
 				int L = fmSize; 		// Current frame size
@@ -148,7 +148,7 @@ public class Simulator {
 			nTags[index] = (int)(numTags*env);
 			e_[index] = totalEmpty/eval;
 			c_[index] = totalCollision/eval;
-			cComm[index] = countCommands/eval;
+			cComm[index] = (countCommands+comm)/eval;
 			timeM[index] = (int)totalTime;
 			nSlots[index] = totalOffset/eval;
 			index++;
@@ -297,11 +297,11 @@ public class Simulator {
 			int time[][]= {lowerbound.get(4),schoute.get(4),eomlee.get(4)};
 			int slot[][]= {lowerbound.get(5),schoute.get(5),eomlee.get(5)}; 
 
-			grafico.gerarN("DSlots", curves, "Tags", "Slots", slot, schoute.get(2));
-			grafico.gerarN("DSlotsVazios", curves, "Tags", "Empty", empty, schoute.get(2));
-			grafico.gerarN("DColisoes", curves, "Tags", "Collision", collision, schoute.get(2));
-			grafico.gerarN("DComandos", curves, "Tags", "Commands", command, schoute.get(2));
-			grafico.gerarN("DTempo", curves, "Tags", "Time", time, schoute.get(2));
+			grafico.gerarN("Slots", curves, "Tags", "Slots", slot, schoute.get(2));
+			grafico.gerarN("SlotsVazios", curves, "Tags", "Empty", empty, schoute.get(2));
+			grafico.gerarN("Colisoes", curves, "Tags", "Collision", collision, schoute.get(2));
+			grafico.gerarN("Comandos", curves, "Tags", "Commands", command, schoute.get(2));
+			grafico.gerarN("Tempo", curves, "Tags", "Time 10^-3(ms)", time, schoute.get(2));
 			break;
 
 		case (2):
@@ -314,11 +314,11 @@ public class Simulator {
 			int time2[][]= {ilcmsbs.get(4)};
 			int slot2[][]= {ilcmsbs.get(5)};
 
-			grafico.gerarN("DSlots", curves2, "Tags", "Slots", slot2, ilcmsbs.get(2));
-			grafico.gerarN("DSlotsVazios", curves2, "Tags", "Empty", empty2, ilcmsbs.get(2));
-			grafico.gerarN("DColisoes", curves2, "Tags", "Collision", collision2, ilcmsbs.get(2));
-			grafico.gerarN("DComandos", curves2, "Tags", "Commands", command2, ilcmsbs.get(2));
-			grafico.gerarN("DTempo", curves2, "Tags", "Time", time2, ilcmsbs.get(2));
+			grafico.gerarN("Slots", curves2, "Tags", "Slots", slot2, ilcmsbs.get(2));
+			grafico.gerarN("SlotsVazios", curves2, "Tags", "Empty", empty2, ilcmsbs.get(2));
+			grafico.gerarN("Colisoes", curves2, "Tags", "Collision", collision2, ilcmsbs.get(2));
+			grafico.gerarN("Comandos", curves2, "Tags", "Commands", command2, ilcmsbs.get(2));
+			grafico.gerarN("Tempo", curves2, "Tags", "Time 10^-4(ms)", time2, ilcmsbs.get(2));
 			break;
 
 		case (3):
@@ -333,11 +333,11 @@ public class Simulator {
 			int time3[][]= {lowerbound.get(4),schoute.get(4),eomlee.get(4),ilcmsbs.get(4)};
 			int slot3[][]= {lowerbound.get(5),schoute.get(5),eomlee.get(5),ilcmsbs.get(5)}; 
 
-			grafico.gerarN("DSlots", curves3, "Tags", "Slots", slot3, schoute.get(2));
-			grafico.gerarN("DSlotsVazios", curves3, "Tags", "Empty", empty3, schoute.get(2));
-			grafico.gerarN("DColisoes", curves3, "Tags", "Collision", collision3, schoute.get(2));
-			grafico.gerarN("DComandos", curves3, "Tags", "Commands", command3, schoute.get(2));
-			grafico.gerarN("DTempo", curves3, "Tags", "Time", time3, schoute.get(2));		
+			grafico.gerarN("Slots", curves3, "Tags", "Slots", slot3, schoute.get(2));
+			grafico.gerarN("SlotsVazios", curves3, "Tags", "Empty", empty3, schoute.get(2));
+			grafico.gerarN("Colisoes", curves3, "Tags", "Collision", collision3, schoute.get(2));
+			grafico.gerarN("Comandos", curves3, "Tags", "Commands", command3, schoute.get(2));
+			grafico.gerarN("Tempo", curves3, "Tags", "Time 10^-3(ms)", time3, schoute.get(2));		
 			break;
 
 		default:
