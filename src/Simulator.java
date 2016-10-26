@@ -126,7 +126,8 @@ public class Simulator {
 					 */
 					int f_ = (int) Math.ceil(estimateFunction(protocol,qc,collision,success,slots,L));
 
-					if(pot2) L = (int) Math.pow(2,(Math.ceil(log2(f_))));
+					// n_ = f_ + success
+					if(pot2) L = get2Q(f_ + success);
 					else L = f_;
 					
 					status = genRandom(n,L);
@@ -161,6 +162,22 @@ public class Simulator {
 		}
 		esc.add(e_); esc.add(c_); esc.add(nTags); esc.add(cComm); esc.add(timeM); esc.add(nSlots);
 		return esc;
+	}
+
+	public int get2Q(int n_) {
+		if(n_ >= 1 && n_ <= 5) return 4;
+		if(n_ >= 6 && n_ <= 11) return 8;
+		if(n_ >= 12 && n_ <= 22) return 16;
+		if(n_ >= 23 && n_ <= 44) return 32;
+		if(n_ >= 45 && n_ <= 89) return 64;
+		if(n_ >= 90 && n_ <= 177) return 128;
+		if(n_ >= 178 && n_ <= 355) return 256;
+		if(n_ >= 356 && n_ <= 710) return 512;
+		if(n_ >= 711 && n_ <= 1420) return 1024;
+		if(n_ >= 1421 && n_ <= 2840) return 2048;
+		if(n_ >= 2841 && n_ <= 5680) return 4096;
+		if(n_ >= 5681 && n_ <= 11360) return 8192;
+		return 0;
 	}
 
 	public double log2(double x) {
